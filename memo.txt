@@ -1,0 +1,238 @@
+2017/12/23
+raspi 起動設定完了 noobs
+固定ip 192.168.11.111 (/etc/dhcpcd.conf を編集)
+ssh 接続で user名 seiichi の　pass はnNo2
+
+カメラ起動設定完了
+コマンドは以下
+raspistill -o photos/${now_time}.jpeg
+raspivid -o movies/${now_time}.h264 -t 10000
+で、raspi側にシェルを作成した　
+
+モバイルルータ設定は未完了
+soracomのカ会員登録済
+sim cardは挿入済み
+有線LANにつながっているので、とりあえず置いといて今度実家帰ってデスクトップ環境できたら通信確かめる。
+
+次にやること
+モバイルルータの設定は後回し。
+1. paspiで写真とってデータをs3にアップロードするshell作ってcurl実行する
+2. s3で画面描画かな？
+
+どんなアーキテクチャがいいのか
+ユーザの用途希望を考えて設計する
+--------------------------------------------------------------------------------
+2017/12/24
+
+- 画像と動画ファイル、でかすぎ問題
+写真で20M, 動画10秒で200MBくらい
+1m:  20M * 60 =  1.2GB
+1h:  20M * 60 * 60 =  72GB
+1d:  20M * 60 * 60 * 24 =  2T
+30d: 20M * 60 * 60 * 24 * 30 =  52TB
+なので、非現実的。一般的にストリーミング配信ってどうやってるのか調べたほうがいいかも。
+実際、20分まわしてみて1GBぐらいだって、raspiの容量不足になった。
+
+- 動体検知したカメラや動画撮影に関して。
+https://qiita.com/suppy193/items/e9faedbc268d439bd02b
+を参考にして、動体検知して画像と動画を保存できるmotionをインストールした。
+/etc/motion/motion.conf 以下でいろいろ設定できるが現在はデフォ
+再度調べ直したがこれ、動体検知機能が付いているwebカメラ専用機能なので意味なかった...orz
+
+- steaming配信に関して
+動画のストリーミング配信と、バックアップ保存ができれば良いのではと思った。
+
+- 動画の保存に関して
+動画の解像度を下げるか、秒間フレーム数を下げるかすればデータサイズは下がる。
+どれぐらい下げるかの基準は、目標月額料金から逆算するのが早い
+例）目標月額10$
+- s3の料金
+- simの料金
+
+--------------------------------------------------------------------------------
+2017/12/27
+https://qiita.com/PonDad/items/9a6dbd6957df06a4532e
+https://github.com/jacksonliam/mjpg-streamer
+を参考にmjpg-streamerでストリーミング設定完了
+http://192.168.11.111:8000/stream.html　で見れるようにした
+実行コマンド ./mjpg_streamer -o "./output_http.so -w ./www -p 8000" -i "./input_raspicam.so -fps 10"
+--------------------------------------------------------------------------------
+2018/01/01
+l-02cでsoracomのシムいれてraspiからデータ通信できるところまで確認
+3G通信設定ファイル sudo vim /etc/wvdial.conf
+3G通信実行 sudo wvdial
+
+raspiを家のLANからssh接続できるようにした。
+raspi側の設定ファイル sudo vim /etc/dhcpcd.conf
+接続方法 ssh seiichi@192.168,0.111
+
+ssh接続で開発
+写真を1秒5フレームとかで切って、タイムプラス作成できたら理想的
+
+シェルスクリプトで５秒毎の画像のデータをs3にアップロードするところまで完成
+1pic: 50KB, 5sec なので1日1.44GB
+
+ブラザ上での画像取得表示のフロントエンド開発が難航
+サーバ起動: python -m SimpleHTTPServer
+cross-origin-cancelのブラウザ起動: google-chrome http://localhost:8000 --disable-web-security --user-data-dir=/tmp/someDir
+s3からの画像データをhttpで取得して200となってるが、画面描画できていない
+gzipとunzipした両方とも表示できていない
+--------------------------------------------------------------------------------
+2018/01/02
+
+優先順位を考える
+データ収集の仕組みさえ完成してしまえば東京行ってもできる
+そのためにもとりあえずモック的なものでもいいから作って見せてフィードバック貰わないと
+
+raspivid
+写真とってアップロードは完了
+データの逐次削除をやらなきゃ
+
+web-site-prod
+imgのリンクを切り替えて画像取得するのはできた
+
+storage-prod
+ファイルのリスト一覧を返しているだけ
+
+5secに１回
+5-24
+
+データ収集の仕組み完成
+電源入れたら、 3G通信確立 -> 写真撮影 -> 写真保存 -> ディレクトリの変更をトリガー -> ファイルアップロード開始
+sim + raspi + camera での運用開始
+cronの情報を参照すれば大体わかる = sudo crontab -e
+
+--------------------------------------------------------------------------------
+2018/01/03
+
+料金試算
+
+soracom simの月額料金試算: 8208 = 0.1MB * 10回 * 60 * 19 * 30 * 0.24(standard)
+s3の月額料金試算：
+
+結果：
+1. cronでの定期実行ができていない
+2. 実行されるが途中で止まる
+
+という問題があるため一旦ログを収集してs3で見れるようにした
+
+--------------------------------------------------------------------------------
+2018/01/04
+
+結局間に合わなそうなので、
+公開鍵方式で自宅のraspiへssh接続できるようにした。
+gip: s3のlogs直下参照
+lip: 192.168.0.111
+username: seiichi
+pub_key: raspiに登録済み
+secret_key: workspace/laundry-monitoring-service-raspi/ssh-key-pars/id_rsa
+
+起動しているが、途中で落ちている模様。
+
+--------------------------------------------------------------------------------
+2018/01/04
+lan経由の写真アップロードは正常に動作
+sim に切り替えると１５分位でアップロードができていなくなる
+症状：
+	/media/seiichi 以降が見れなくなっている
+	df コマンドで確認すると /media/seiichi が　入力/出力エラーとなっていた
+あと、seiichi user だとディスクフルになっていた
+
+考えられる原因：
+	ネットワーク帯域が少なく途中で通信が切れた
+	ファイルアップロードが間に合わず大量の同時並行プロセスが走り、外付けhddが処理しきれなくなった
+--------------------------------------------------------------------------------
+2018/01/13
+simの通信切れるのは後回し
+
+lan経由でも一部s3uploadできていなかった。
+写真は取れている
+gz圧縮が途中で行われなくなっていた
+watch の inotify があるタイミング(20:35 など)から動作しなくなっていた
+動作しなくなった時刻から、止まっているプロセスがある
+ディレクトリが新しく作成されると、止まっていたプロセスは消え、問題なくアップロードが再開される
+
+- 謎のプロセスが消える前後
+前
+root@raspberrypi:/home/seiichi/laundry-monitoring-raspi# ps aux | grep -e PID -e watch
+USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root        36  0.0  0.0      0     0 ?        S<   06:00   0:00 [watchdogd]
+root       367  0.0  0.0   1900   424 ?        Ss   06:00   0:00 /bin/sh -c /bin/sleep 60 && /home/seiichi/laundry-monitoring-raspi/watch.sh 1>/media/seiichi/laundry_monitoring_service/logs/`/bin/date "+%Y-%m-%d_"`watch.log 2>/media/seiichi/laundry_monitoring_service/logs/`/bin/date "+%Y-%m-%d_"`watch_error.log
+root       734  0.1  0.1   2028  1300 ?        S    06:01   1:24 /bin/sh /home/seiichi/laundry-monitoring-raspi/watch.sh
+root     31282  0.0  0.0   2028   696 ?        S    20:35   0:00 /bin/sh /home/seiichi/laundry-monitoring-raspi/watch.sh
+root      3115  0.0  0.0   3852   544 pts/0    S+   20:59   0:00 grep -e PID -e watch
+後
+root@raspberrypi:/home/seiichi/laundry-monitoring-raspi# ps aux | grep -e PID -e watch
+USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root        36  0.0  0.0      0     0 ?        S<   06:00   0:00 [watchdogd]
+root       367  0.0  0.0   1900   424 ?        Ss   06:00   0:00 /bin/sh -c /bin/sleep 60 && /home/seiichi/laundry-monitoring-raspi/watch.sh 1>/media/seiichi/laundry_monitoring_service/logs/`/bin/date "+%Y-%m-%d_"`watch.log 2>/media/seiichi/laundry_monitoring_service/logs/`/bin/date "+%Y-%m-%d_"`watch_error.log
+root       734  0.1  0.1   2028  1300 ?        S    06:01   1:24 /bin/sh /home/seiichi/laundry-monitoring-raspi/watch.sh
+root      3319  0.0  0.0   2028   696 ?        S    21:00   0:00 /bin/sh /home/seiichi/laundry-monitoring-raspi/watch.sh
+root      3324  0.0  0.0   3852   564 pts/0    S+   21:00   0:00 grep -e PID -e watch
+
+--------------------------------------------------------------------------------
+2018/01/14
+
+ 画像容量
+ 480:360
+  q=10 41890
+	q=5  34252
+	q=1  29257
+	480:360
+   q=10 41890
+ 	q=5  34252
+ 	q=1  29257
+
+全部１つのshないでできるようなシェルを作った
+aws s3 upload が遅いのが問題な気がする
+
+--------------------------------------------------------------------------------
+2018/01/17
+
+soracom funnel -> kinesis -> s3 のほうがいいのかも (https://dev.classmethod.jp/cloud/aws/introduce-to-soracom-funnel/)
+user,authKeyId,authKeySecret
+seiichi,keyId-UrLvRgzCIxMTRxRNzXCrvFKxZLHkzIbf,secret-8jW3zFefa3vFTzKPq73321oO8IBXeKCUK6cD7qWDTyqnWXY2JlrjgDqOSSJzd9VT
+soracom gate 使えば外部からsimへssh接続できるらしい (https://soracom.jp/services/gate/)
+
+s3 trasfer acceleration を使って直列処理で20秒に１回ファイルアップロードできるようになった。
+とりあえずこれで運用開始したほうが良さそう。
+その前に、上記のsoracom gate 設定して、いつでもssh 接続できるように設定して、
+いつかsoracom funnelへデータ転送できるようにしたほうがアップロード早くなるはずなので忘れずに。
+--------------------------------------------------------------------------------
+2018/01/18
+
+途中で外付けssdが切断される問題がまた発生した。
+/var/log/syslog を調べてI/Oエラーがあったので、いろいろ調べて下記の対処をしてみた。
+usbへの供給電力の底上げ up to 1200A
+/boot/config.txtにmax_usb_current=1
+
+soracom vpg で接続試みたけど(https://dev.soracom.io/jp/start/gate/)ec2のcidr の設定を172から始めたもんだから、
+いろいろとミスってる気がするのではじめからやり直し！とりあえずec2をストップしといた。
+
+start/stopのロジック実装したい
+
+--------------------------------------------------------------------------------
+2018/01/19
+
+1. simのみでのデータ通信を利用中
+データ通信が途中で切れる -> 再接続のpersist設定をする(https://qiita.com/tomo-chan/items/a4f7ad511a90ab91d06a)
+
+2. ec2からのssh接続は1.が安定してからかな
+ec2からのssh接続はできた
+	sudo ./gate_init_vxlan.sh eth0 10.0.0.254 vxlan0 10.251.109.37 9 100.64.207.4 100.64.207.132
+	ssh -i .ssh/id_rsa seiichi@<ip_addr>
+
+
+--------------------------------------------------------------------------------
+2018/01/20
+
+問題： simのみでのデータ通信を利用中だがsessionが途中でdeletedになる
+1. 現在、何もしていなくても２時間程で切断される
+2. データアップロードすると20-30分ほどで切断される
+
+--------------------------------------------------------------------------------
+2018/01/20
+
+ssdのマウントが切れていることがある。
+おそらくそれが原因で、ログファイルやらが書き込めないので、cronのいろんな実行(modem usbの再接続とか)ができていない。
+再現性はあるので、次になった場合は 手動でマウント -> check_ssd.sh に設定書き込みを行う
