@@ -1,0 +1,4 @@
+{
+  "apiRoot": "http://localhost/api",
+  "imageRoot": "http://localhost/images"
+}

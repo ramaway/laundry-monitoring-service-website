@@ -1,0 +1,4 @@
+{
+  "apiRoot": "https://gcg42ovcg8.execute-api.ap-northeast-1.amazonaws.com/prod",
+  "imageRoot": "https://s3-ap-northeast-1.amazonaws.com"
+}
