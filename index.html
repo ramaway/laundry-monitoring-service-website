@@ -4,17 +4,33 @@
 		<meta charset="utf-8">
 		<TITLE>Laundry Monitoring Service</TITLE>
 		<LINK rel="icon" href="icon/favicon.ico" />
-		<LINK rel="stylesheet" type="text/css" href="index.css">
+		<LINK rel="stylesheet" type="text/css" href="index.css" />
 	</HEAD>
 
 	<BODY>
 		<div class="Header">
-			<img src="/icon/logo.jpg" >
+			<div class="tabs">
+				<img src="/icon/logo.jpg">
+			</div>
+			<div class="tabs">
+				<span id="signinButton">
+					<span
+					class="g-signin"
+					data-callback="signinCallback"
+					data-clientid="1026151522294-ceq87ekntjfolumqp7cr126p9tpvjd7t.apps.googleusercontent.com"
+					data-cookiepolicy="single_host_origin"
+					data-requestvisibleactions="http://schemas.google.com/AddActivity"
+					data-scope="https://www.googleapis.com/auth/plus.login"></span>
+				</span>
+				<div id="revoke" style="display:none">
+					<input type="button" id="revokeButton" value="revoke">
+				</div>
+			</div>
 		</div>
 		<br><br><br><br>
 		<center>
 			<div class="showbox">
-        <p>
+				<p>
 					<img src="default.jpg" id="slideshow" alt="slide show">
 				</p>
 				<p>
@@ -31,4 +47,39 @@
 		</center>
 	</BODY>
 	<script type="text/javascript" src="index.js"></script>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+	<script type="text/javascript">
+	(function() {
+		var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
+		po.src = 'https://apis.google.com/js/client:plusone.js';
+		var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
+	})();
+
+	function signinCallback(authResult) {
+		if (authResult['access_token']) {
+			document.getElementById('signinButton').setAttribute('style', 'display: none');
+			document.getElementById('revoke').setAttribute('style', 'display: block');
+		} else if (authResult['error']) {
+		}
+		function disconnectUser() {
+			var revokeUrl = 'https://accounts.google.com/o/oauth2/revoke?token=' +
+			authResult['access_token'];
+			$.ajax({
+				type: 'GET',
+				url: revokeUrl,
+				async: false,
+				contentType: "application/json",
+				dataType: 'jsonp'
+			})
+			.done(function(nullResponse) {
+				document.getElementById('signinButton').setAttribute('style', 'display: block');
+				document.getElementById('revoke').setAttribute('style', 'display: none');
+			})
+			.fail(function(e) {
+			});
+		}
+		$('#revokeButton').click(disconnectUser);
+	}
+</script>
+
 </HTML>

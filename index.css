@@ -1,18 +1,28 @@
 
 .Header {
+	display: table;
 	position: fixed;
 	top: 0;
 	left: 0;
 	width: 100%;
-	height: 62.5px;
+	height: 60.5px;
 	padding: 10px;
 	background-color: #000000;
 }
 
- .Header img {
-		border: 2px
-		width: 82.5px;
-		height: 62.5px;
+.Header .tabs {
+	display: table-cell;
+	vertical-align: middle;
+}
+
+.tabs img {
+	border: 2px;
+	width: 82.5px;
+	height: 62.5px;
+}
+
+#signinButton {
+	float: right;
 }
 
 .showbox {
@@ -52,7 +62,7 @@
 }
 
 .btn:hover{
-		background: #668ad8;
+	background: #668ad8;
 }
 
 #startstop {
@@ -69,9 +79,9 @@
 	width: 120px;
 	height: 120px;
 	font-size: 16px;
- border: none;
+	border: none;
 }
 
 #startstop:hover{
-		background: #668ad8;
+	background: #668ad8;
 }
