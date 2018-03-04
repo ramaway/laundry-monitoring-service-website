@@ -23,6 +23,12 @@
 
 #signinButton {
 	float: right;
+	margin-right: 30px;
+}
+
+#revoke {
+	float: right;
+	margin-right: 30px;
 }
 
 .showbox {

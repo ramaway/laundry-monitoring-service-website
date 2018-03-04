@@ -1,0 +1,14 @@
+.Header {
+  display: table;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 60.5px;
+  padding: 10px;
+  background-color: #000000; }
+  .Header .tabs {
+    display: table-cell;
+    vertical-align: middle; }
+
+/*# sourceMappingURL=style.css.map */
