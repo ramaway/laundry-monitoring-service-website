@@ -49,7 +49,7 @@
 
 .showbox input {
 	width: 50px;
-	font-size: 25px;
+	font-size: 20px;
 }
 
 .showbox span {
@@ -63,7 +63,7 @@
 	border:none;
 	background: #000000;
 	color: #FFF;
-	font-size: 16px;
+	font-size: 14px;
 	transition: .4s;
 }
 

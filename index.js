@@ -66,8 +66,10 @@ document.getElementById('now_time').textContent = toDisplyaString(new Date());
 document.getElementById('startstop').onclick = toggleStartStop;
 document.getElementById('backH').onclick = function(){changePhoto(0, -1)};
 document.getElementById('backD').onclick = function(){changePhoto(-1, 0)};
+document.getElementById('backW').onclick = function(){changePhoto(-7, 0)};
 document.getElementById('nextH').onclick = function(){changePhoto(0, 1)};
 document.getElementById('nextD').onclick = function(){changePhoto(1, 0)};
+document.getElementById('nextW').onclick = function(){changePhoto(7, 0)};
 
 // added for tmp
 function Base64ToImage(base64img, callback) {
