@@ -63,7 +63,8 @@ function toggleStartStop(){
 //date_now
 document.getElementById('now_time').textContent = toDisplyaString(new Date());
 // ▼ボタンクリックに関数を割り当てる
-document.getElementById('startstop').onclick = toggleStartStop;
+document.getElementById('start').onclick = toggleStartStop;
+//document.getElementById('stop').onclick = toggleStartStop;
 document.getElementById('backH').onclick = function(){changePhoto(0, -1)};
 document.getElementById('backD').onclick = function(){changePhoto(-1, 0)};
 document.getElementById('backW').onclick = function(){changePhoto(-7, 0)};
