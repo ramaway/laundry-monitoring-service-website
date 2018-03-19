@@ -17,7 +17,8 @@
     .Header .tabs #signinButton {
       float: right;
       margin-right: 30px; }
-    .Header .tabs #revoke {
+    .Header .tabs #signoutButton {
+      width: 100px;
       float: right;
       margin-right: 30px; }
 

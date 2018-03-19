@@ -1,62 +1,52 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<meta charset="utf-8">
-		<title>Laundry Monitoring Service</title>
-		<link rel="icon" href="icon/favicon.ico">
-		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
-		<link rel="stylesheet" type="text/css" href="css/style.css">
-		<!-- <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheadgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script> -->
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
-		<!-- <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script> -->
-		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-	</head>
+<head>
+	<meta charset="utf-8">
+	<meta name="google-signin-client_id" content="1026151522294-ceq87ekntjfolumqp7cr126p9tpvjd7t.apps.googleusercontent.com">
+	<title>Laundry Monitoring Service</title>
+	<link rel="icon" href="icon/favicon.ico">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+	<link rel="stylesheet" type="text/css" href="css/style.css">
+	<!-- <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheadgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script> -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+	<!-- <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script> -->
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+	<script src="https://apis.google.com/js/platform.js" async defer></script>
+</head>
 
-	<body>
-		<div class="Header">
-			<div class="tabs">
-				<a href="/"><img src="/icon/logo.jpg"></a>
-			</div>
-			<div class="tabs">
-				<span id="signinButton">
-					<span
-					class="g-signin"
-					data-callback="signinCallback"
-					data-clientid="1026151522294-ceq87ekntjfolumqp7cr126p9tpvjd7t.apps.googleusercontent.com"
-					data-cookiepolicy="single_host_origin"
-					data-requestvisibleactions="http://schemas.google.com/AddActivity"
-					data-scope="https://www.googleapis.com/auth/plus.login"></span>
-				</span>
-			</div>
-			<div class="tabs">
-				<div id="revoke" style="display:none">
-					<input type="button" id="revokeButton" class="btn btn-primary" value="LogOut">
-				</div>
-			</div>
+<body>
+	<div class="Header">
+		<div class="tabs">
+			<a href="/"><img src="/icon/logo.jpg"></a>
 		</div>
-		<br><br><br><br>
-		<center>
-			<div class="showbox">
-				<p>
-					<img src="default.jpg" id="slideshow" alt="slide show">
-				</p>
-				<p>
-					<input type="button" value="<<<" id="backW" class="btn">
-					<input type="button" value="<<" id="backD" class="btn">
-					<input type="button" value="<" id="backH" class="btn">
-					<span id="now_time"></span>
-					<input type="button" value=">" id="nextH" class="btn">
-					<input type="button" value=">>" id="nextD" class="btn">
-					<input type="button" value=">>>" id="nextW" class="btn">
-				</p>
-				<p>
-					<input type="button" value="START" id="start" class="startStopBtn">
-					<input type="button" value="STOP" id="stop" class="startStopBtn">
-				</p>
-			</div>
-		</center>
-		<script type="text/javascript" src="index.js"></script>
-		<script type="text/javascript">
-		</script>
-	</BODY>
+		<div class="tabs">
+			<div id="signinButton" class="g-signin2" data-onsuccess="onSignIn"></div>
+		</div>
+		<div class="tabs">
+			<input type="button" id="signoutButton" class="btn" onClick="signOut();" value="Sign Out" style="display:none">
+		</div>
+	</div>
+	<br><br><br><br>
+	<center>
+		<div class="showbox">
+			<p>
+				<img src="default.jpg" id="slideshow" alt="slide show">
+			</p>
+			<p>
+				<input type="button" value="<<<" id="backW" class="btn">
+				<input type="button" value="<<" id="backD" class="btn">
+				<input type="button" value="<" id="backH" class="btn">
+				<span id="now_time"></span>
+				<input type="button" value=">" id="nextH" class="btn">
+				<input type="button" value=">>" id="nextD" class="btn">
+				<input type="button" value=">>>" id="nextW" class="btn">
+			</p>
+			<p>
+				<input type="button" value="START" id="start" class="startStopBtn">
+				<input type="button" value="STOP" id="stop" class="startStopBtn">
+			</p>
+		</div>
+	</center>
+	<script type="text/javascript" src="index.js"></script>
+</BODY>
 </HTML>

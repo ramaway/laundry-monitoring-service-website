@@ -1,39 +1,25 @@
-(function() {
-	var po = document.createElement('script');
-	po.type = 'text/javascript';
-	po.async = true;
-	po.src = 'https://apis.google.com/js/client:plusone.js';
-	var s = document.getElementsByTagName('script')[0];
-	s.parentNode.insertBefore(po, s);
-})();
+function onSignIn(googleUser) {
+	var id_token = googleUser.getAuthResponse().id_token;
+	localStorage.setItem('id_token', id_token);
+	console.log('ID TOKEN: ', id_token);
 
-function signinCallback(authResult) {
-	if (authResult['access_token']) {
-		document.getElementById('signinButton').setAttribute('style', 'display: none');
-		document.getElementById('revoke').setAttribute('style', 'display: block');
-		console.log('authResult[access_token]: ' + authResult['access_token']);
-	} else if (authResult['error']) {
-		console.log('auth error');
-	}
-	function disconnectUser() {
-		var revokeUrl = 'https://accounts.google.com/o/oauth2/revoke?token=' + authResult['access_token'];
-		$.ajax({
-			type: 'GET',
-			url: revokeUrl,
-			async: false,
-			contentType: "application/json",
-			dataType: 'jsonp'
-		})
-		.done(function(nullResponse) {
-			document.getElementById('signinButton').setAttribute('style', 'display: block');
-			document.getElementById('revoke').setAttribute('style', 'display: none');
-		})
-		.fail(function(e) {
-		});
-	}
-	console.log('disconnectUser: ', disconnectUser);
-	$('#revokeButton').click(disconnectUser);
-	console.log('CameToEnd');
+	var profile = googleUser.getBasicProfile();
+	console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
+	console.log('Name: ' + profile.getName());
+	console.log('Image URL: ' + profile.getImageUrl());
+	console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
+	document.getElementById('signinButton').setAttribute('style', 'display: none');
+	document.getElementById('signoutButton').setAttribute('style', 'display: block');
+};
+
+function signOut() {
+	var auth2 = gapi.auth2.getAuthInstance();
+	auth2.signOut().then(function () {
+		console.log('User signed out.');
+		document.getElementById('signinButton').setAttribute('style', 'display: block');
+		document.getElementById('signoutButton').setAttribute('style', 'display: none');
+		localStorage.removeItem('id_token');
+	});
 }
 
 
@@ -69,35 +55,50 @@ function changePhoto(d, h){
 // 	var v = document.getElementById('now_time').textContent;
 // 	document.getElementById('now_time').textContent = toDisplyaString(new Date(v.split('_')[0].split('-')[0], v.split('_')[0].split('-')[1]-1, v.split('_')[0].split('-')[2]+d, v.split('_')[1].split(':')[0]+h))
 // }
-function getPhotosURL(url){
+function getPhotosURL(url, token){
 	return new Promise((resolve, reject) => {
 		var request = new XMLHttpRequest();
 		request.open('GET', url);
+		request.setRequestHeader('authorization', 'Bearer '+ token)
 		request.onload = function () {
 			if (this.status === 200) {
 				resolve (this.response);
+			}
+			else if (this.status === 403) {
+				reject (this.response);
+			}
+			else {
+				reject (this.response);
 			}
 		};
 		request.send(null);
 	});
 }
 function toggleStartStop(){
-	var url = 'https://gcg42ovcg8.execute-api.ap-northeast-1.amazonaws.com/prod/photos';
-	var prefix= document.getElementById('now_time').textContent.split(':')[0].replace('_', '/');
-	var query = '?prefix=' + prefix
-	getPhotosURL(url + query).then((res) => {
-		res = JSON.parse(res);
-		console.log('res: ', res);
-		for(i = 0; i < res.keys.length; i++){
-			(function(pram) {
-				setTimeout(function() {
-					console.log(res.keys[pram]);
-					document.getElementById('now_time').textContent = res.keys[pram].split('/')[2] + '_' + res.keys[pram].split('/')[3] + ':' + res.keys[pram].split('/')[4].split('-')[0] + ':' + res.keys[pram].split('/')[4].split('-')[1].split('.')[0]
-					document.getElementById('slideshow').src = 'https://s3-ap-northeast-1.amazonaws.com/' + res.keys[pram]
-				}, pram * 100);
-			})(i);
-		};
-	});
+	const token = localStorage.getItem('id_token') || '';
+	if(token){
+		var url = 'https://gcg42ovcg8.execute-api.ap-northeast-1.amazonaws.com/prod/photos';
+		var prefix= document.getElementById('now_time').textContent.split(':')[0].replace('_', '/');
+		var query = '?prefix=' + prefix
+		getPhotosURL(url + query, token).then((res) => {
+			res = JSON.parse(res);
+			console.log('res: ', res);
+			for(i = 0; i < res.keys.length; i++){
+				(function(pram) {
+					setTimeout(function() {
+						console.log(res.keys[pram]);
+						document.getElementById('now_time').textContent = res.keys[pram].split('/')[2] + '_' + res.keys[pram].split('/')[3] + ':' + res.keys[pram].split('/')[4].split('-')[0] + ':' + res.keys[pram].split('/')[4].split('-')[1].split('.')[0]
+						document.getElementById('slideshow').src = 'https://s3-ap-northeast-1.amazonaws.com/' + res.keys[pram]
+					}, pram * 100);
+				})(i);
+			};
+		}).catch((res) => {
+			console.log('res: ', res);
+			alert(JSON.parse(res).Message)
+		});
+	} else {
+		alert('You must log in.')
+	}
 }
 //date_now
 document.getElementById('now_time').textContent = toDisplyaString(new Date());
