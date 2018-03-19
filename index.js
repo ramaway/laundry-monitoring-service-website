@@ -1,3 +1,40 @@
+(function() {
+	var po = document.createElement('script');
+	po.type = 'text/javascript';
+	po.async = true;
+	po.src = 'https://apis.google.com/js/client:plusone.js';
+	var s = document.getElementsByTagName('script')[0];
+	s.parentNode.insertBefore(po, s);
+})();
+
+function signinCallback(authResult) {
+	if (authResult['access_token']) {
+		document.getElementById('signinButton').setAttribute('style', 'display: none');
+		document.getElementById('revoke').setAttribute('style', 'display: block');
+		console.log('authResult[access_token]: ' + authResult['access_token']);
+	} else if (authResult['error']) {
+		console.log('auth error');
+	}
+	function disconnectUser() {
+		var revokeUrl = 'https://accounts.google.com/o/oauth2/revoke?token=' + authResult['access_token'];
+		$.ajax({
+			type: 'GET',
+			url: revokeUrl,
+			async: false,
+			contentType: "application/json",
+			dataType: 'jsonp'
+		})
+		.done(function(nullResponse) {
+			document.getElementById('signinButton').setAttribute('style', 'display: block');
+			document.getElementById('revoke').setAttribute('style', 'display: none');
+		})
+		.fail(function(e) {
+		});
+	}
+	$('#revokeButton').click(disconnectUser);
+}
+
+
 // 1桁の数字を0埋めで2桁にする
 var toDoubleDigits = function(num) {
 	num += "";
