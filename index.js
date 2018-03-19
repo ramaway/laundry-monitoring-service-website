@@ -31,7 +31,9 @@ function signinCallback(authResult) {
 		.fail(function(e) {
 		});
 	}
+	console.log('disconnectUser: ', disconnectUser);
 	$('#revokeButton').click(disconnectUser);
+	console.log('CameToEnd');
 }
 
 
