@@ -10,5 +10,69 @@
 	.tabs{
 		display: table-cell;
 		vertical-align: middle;
+		img{
+			border: 2px;
+			width: 82.5px;
+			height: 62.5px;
+		}
+		#signinButton {
+			float: right;
+			margin-right: 30px;
+		}
+		#revoke {
+			float: right;
+			margin-right: 30px;
+		}
+	}
+}
+
+.showbox {
+	display: inline-block;
+	img {
+		border: 2px;
+		width: 800px;
+		height: 600px;
+	}
+	p {
+		text-align: center;
+	}
+	span {
+		width: 300px;
+		margin-left: 200px;
+		margin-right: 200px;
+		font-size: 25px;
+	}
+}
+
+.btn {
+	width: 50px;
+	border:none;
+	background: #000000;
+	color: #FFF;
+	font-size: 14px;
+	transition: .4s;
+	&:hover{
+		background: #668ad8;
+	}
+}
+
+.startStopBtn{
+		outline:none;
+		display: inline-block;
+		text-decoration: none;
+		background: #000000;
+		color: #FFF;
+		line-height: 120px;
+		border-radius: 50%;
+		text-align: center;
+		vertical-align: middle;
+		overflow: hidden;
+		transition: .4s;
+		width: 120px;
+		height: 120px;
+		font-size: 16px;
+		border: none;
+		&:hover{
+			background: #668ad8;
 	}
 }
