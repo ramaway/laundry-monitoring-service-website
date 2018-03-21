@@ -74,6 +74,19 @@ function getPhotosURL(url, token){
 		request.send(null);
 	});
 }
+
+var timer;
+function runSlideShow(res, i){
+	console.log(res.keys[i]);
+	document.getElementById('now_time').textContent = res.keys[i].split('/')[2] + '_' + res.keys[i].split('/')[3] + ':' + res.keys[i].split('/')[4].split('-')[0] + ':' + res.keys[i].split('/')[4].split('-')[1].split('.')[0]
+	document.getElementById('slideshow').src = 'https://s3-ap-northeast-1.amazonaws.com/' + res.keys[i]
+	if(i < res.keys.length-1) {
+		timer = setTimeout(function(){
+			runSlideShow(res, i+1)
+		}, 100);
+	}
+}
+
 function toggleStartStop(){
 	const token = localStorage.getItem('id_token') || '';
 	if(token){
@@ -83,15 +96,7 @@ function toggleStartStop(){
 		getPhotosURL(url + query, token).then((res) => {
 			res = JSON.parse(res);
 			console.log('res: ', res);
-			for(i = 0; i < res.keys.length; i++){
-				(function(pram) {
-					setTimeout(function() {
-						console.log(res.keys[pram]);
-						document.getElementById('now_time').textContent = res.keys[pram].split('/')[2] + '_' + res.keys[pram].split('/')[3] + ':' + res.keys[pram].split('/')[4].split('-')[0] + ':' + res.keys[pram].split('/')[4].split('-')[1].split('.')[0]
-						document.getElementById('slideshow').src = 'https://s3-ap-northeast-1.amazonaws.com/' + res.keys[pram]
-					}, pram * 100);
-				})(i);
-			};
+			if(res.keys.length > 0) runSlideShow(res, 0);
 		}).catch((res) => {
 			console.log('res: ', res);
 			alert(JSON.parse(res).Message)
@@ -105,6 +110,10 @@ document.getElementById('now_time').textContent = toDisplyaString(new Date());
 // ▼ボタンクリックに関数を割り当てる
 document.getElementById('start').onclick = toggleStartStop;
 //document.getElementById('stop').onclick = toggleStartStop;
+$('#stop').click(function() {
+	console.log('click stop button');
+	clearTimeout(timer);
+});
 document.getElementById('backH').onclick = function(){changePhoto(0, -1)};
 document.getElementById('backD').onclick = function(){changePhoto(-1, 0)};
 document.getElementById('backW').onclick = function(){changePhoto(-7, 0)};
