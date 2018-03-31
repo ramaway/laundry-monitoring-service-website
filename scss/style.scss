@@ -46,7 +46,6 @@
 }
 
 .btn {
-	width: 50px;
 	border:none;
 	background: #000000;
 	color: #FFF;
@@ -55,6 +54,10 @@
 	&:hover{
 		background: #668ad8;
 	}
+}
+
+.changeTimeBtn{
+	width: 50px;
 }
 
 .startStopBtn{

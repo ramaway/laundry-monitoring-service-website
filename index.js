@@ -83,7 +83,7 @@ function runSlideShow(res, i){
 	if(i < res.length-1) {
 		timer = setTimeout(function(){
 			runSlideShow(res, i+1)
-		}, 100);
+		}, 150);
 	}
 }
 
@@ -132,6 +132,11 @@ function fetchToken(){
 //date_now
 document.getElementById('now_time').textContent = toDisplyaString(new Date());
 // ▼ボタンクリックに関数を割り当てる
+$('#currentTime').on ("click", () => {
+	console.log('currentTime button');
+	document.getElementById('now_time').textContent = toDisplyaString(new Date());
+});
+
 $('#startstop').on("click", function() {
 	let token = fetchToken();
 	if(token){
@@ -148,6 +153,15 @@ $('#startstop').on("click", function() {
 		}
 	}
 });
+
+$('#prev').on ("click", () => {
+	console.log('prev button');
+});
+
+$('#next').on ("click", () => {
+	console.log('next button');
+});
+
 
 document.getElementById('backH').onclick = function(){
 	var now_time = $('#now_time').text();
