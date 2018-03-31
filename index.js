@@ -87,33 +87,57 @@ function runSlideShow(res, i){
 	}
 }
 
-function filterPhotos(threshold, res){
+function filterPhotos(threshold, res, status){
 	return new Promise((resolve, reject) => {
 		console.log('threshold: ', threshold);
-		var filteredRes = res.keys.filter((key) => {
-			var min_sec = key.split('/')[4].split('.')[0].split('-');
-			console.log('min_sec: ', min_sec);
-			if(parseInt(min_sec[0]) > threshold[0]) {
-				return true;
-			} else if (parseInt(min_sec[0]) == threshold[0] && parseInt(min_sec[1]) >= threshold[1]) {
-				return true;
-			} else {
-				return false;
+		var filteredRes = [];
+		var min_sec　= [];
+		if(status == 'prev'){
+			for (var i = 0; i < res.keys.length; i++) {
+				min_sec = res.keys[i].split('/')[4].split('.')[0].split('-');
+				if(parseInt(min_sec[0]) >= threshold[0] && parseInt(min_sec[1]) >= threshold[1]){
+					break;
+				}
+				filteredRes[0] = res.keys[i];
 			}
-		})
+		} else if (status == 'next') {
+			for (var i = res.keys.length-1; i >= 0 ; i--) {
+				min_sec = res.keys[i].split('/')[4].split('.')[0].split('-');
+				if(parseInt(min_sec[0]) <= threshold[0] && parseInt(min_sec[1]) <= threshold[1]){
+					break;
+				}
+				filteredRes[0] = res.keys[i];
+			}
+		} else {
+			filteredRes = res.keys.filter((key) => {
+				min_sec = key.split('/')[4].split('.')[0].split('-');
+				console.log('min_sec: ', min_sec);
+				if(parseInt(min_sec[0]) > threshold[0]) {
+					return true;
+				} else if (parseInt(min_sec[0]) == threshold[0] && parseInt(min_sec[1]) >= threshold[1]) {
+					return true;
+				} else {
+					return false;
+				}
+			})
+		}
 		resolve(filteredRes);
 	});
 }
 
-function toggleStartStop(threshold, token){
+function toggleStartStop(threshold, token, status){
 	var url = 'https://gcg42ovcg8.execute-api.ap-northeast-1.amazonaws.com/prod/photos';
 	var prefix= document.getElementById('now_time').textContent.split(':')[0].replace('_', '/');
 	var query = '?prefix=' + prefix
 	return getPhotosURL(url + query, token).then((res) => {
-		return filterPhotos(threshold, JSON.parse(res)).then((filteredRes) => {
-			console.log('filteredRes: ', filteredRes);
-			if(filteredRes.length > 0) runSlideShow(filteredRes, 0);
-		});
+		if(JSON.parse(res).keys.length > 0) {
+			return filterPhotos(threshold, JSON.parse(res), status).then((filteredRes) => {
+				console.log('filteredRes: ', filteredRes);
+				if(filteredRes.length > 0) {
+					runSlideShow(filteredRes, 0);
+				}
+			});
+		}
 	}).catch((res) => {
 		console.log('res: ', res);
 		alert(JSON.parse(res).Message)
@@ -156,10 +180,30 @@ $('#startstop').on("click", function() {
 
 $('#prev').on ("click", () => {
 	console.log('prev button');
+	let token = fetchToken();
+	if(token){
+		var now_time = $('#now_time').text();
+		var m_now_time = parseInt(now_time.split('_')[1].split(':')[1]);
+		var s_now_time = parseInt(now_time.split('_')[1].split(':')[2]);
+		toggleStartStop([m_now_time, s_now_time], token, 'prev');
+	} else {
+		clearTimeout(timer);
+		$(this).attr('value', 'START');
+	}
 });
 
 $('#next').on ("click", () => {
 	console.log('next button');
+	let token = fetchToken();
+	if(token){
+		var now_time = $('#now_time').text();
+		var m_now_time = parseInt(now_time.split('_')[1].split(':')[1]);
+		var s_now_time = parseInt(now_time.split('_')[1].split(':')[2]);
+		toggleStartStop([m_now_time, s_now_time], token, 'next');
+	} else {
+		clearTimeout(timer);
+		$(this).attr('value', 'START');
+	}
 });
 
 
