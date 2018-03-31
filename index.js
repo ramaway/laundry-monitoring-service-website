@@ -77,44 +77,91 @@ function getPhotosURL(url, token){
 
 var timer;
 function runSlideShow(res, i){
-	console.log(res.keys[i]);
-	document.getElementById('now_time').textContent = res.keys[i].split('/')[2] + '_' + res.keys[i].split('/')[3] + ':' + res.keys[i].split('/')[4].split('-')[0] + ':' + res.keys[i].split('/')[4].split('-')[1].split('.')[0]
-	document.getElementById('slideshow').src = 'https://s3-ap-northeast-1.amazonaws.com/' + res.keys[i]
-	if(i < res.keys.length-1) {
+	console.log(res[i]);
+	document.getElementById('now_time').textContent = res[i].split('/')[2] + '_' + res[i].split('/')[3] + ':' + res[i].split('/')[4].split('-')[0] + ':' + res[i].split('/')[4].split('-')[1].split('.')[0]
+	document.getElementById('slideshow').src = 'https://s3-ap-northeast-1.amazonaws.com/' + res[i]
+	if(i < res.length-1) {
 		timer = setTimeout(function(){
 			runSlideShow(res, i+1)
 		}, 100);
 	}
 }
 
-function toggleStartStop(){
-	const token = localStorage.getItem('id_token') || '';
-	if(token){
-		var url = 'https://gcg42ovcg8.execute-api.ap-northeast-1.amazonaws.com/prod/photos';
-		var prefix= document.getElementById('now_time').textContent.split(':')[0].replace('_', '/');
-		var query = '?prefix=' + prefix
-		getPhotosURL(url + query, token).then((res) => {
-			res = JSON.parse(res);
-			console.log('res: ', res);
-			if(res.keys.length > 0) runSlideShow(res, 0);
-		}).catch((res) => {
-			console.log('res: ', res);
-			alert(JSON.parse(res).Message)
+function filterPhotos(threshold, res){
+	return new Promise((resolve, reject) => {
+		console.log('threshold: ', threshold);
+		var filteredRes = res.keys.filter((key) => {
+			var min_sec = key.split('/')[4].split('.')[0].split('-');
+			console.log('min_sec: ', min_sec);
+			if(parseInt(min_sec[0]) > threshold[0]) {
+				return true;
+			} else if (parseInt(min_sec[0]) == threshold[0] && parseInt(min_sec[1]) >= threshold[1]) {
+				return true;
+			} else {
+				return false;
+			}
+		})
+		resolve(filteredRes);
+	});
+}
+
+function toggleStartStop(threshold, token){
+	var url = 'https://gcg42ovcg8.execute-api.ap-northeast-1.amazonaws.com/prod/photos';
+	var prefix= document.getElementById('now_time').textContent.split(':')[0].replace('_', '/');
+	var query = '?prefix=' + prefix
+	return getPhotosURL(url + query, token).then((res) => {
+		return filterPhotos(threshold, JSON.parse(res)).then((filteredRes) => {
+			console.log('filteredRes: ', filteredRes);
+			if(filteredRes.length > 0) runSlideShow(filteredRes, 0);
 		});
+	}).catch((res) => {
+		console.log('res: ', res);
+		alert(JSON.parse(res).Message)
+	});
+}
+
+function fetchToken(){
+	let token = localStorage.getItem('id_token') || '';
+	if(token){
+		return token;
 	} else {
 		alert('You must log in.')
+		return null;
 	}
 }
 //date_now
 document.getElementById('now_time').textContent = toDisplyaString(new Date());
 // ▼ボタンクリックに関数を割り当てる
-document.getElementById('start').onclick = toggleStartStop;
-//document.getElementById('stop').onclick = toggleStartStop;
-$('#stop').click(function() {
-	console.log('click stop button');
-	clearTimeout(timer);
+$('#startstop').on("click", function() {
+	let token = fetchToken();
+	if(token){
+		console.log('clicked button: ', $(this).val());
+		if($(this).val() === 'START'){
+			var now_time = $('#now_time').text();
+			var m_now_time = parseInt(now_time.split('_')[1].split(':')[1]);
+			var s_now_time = parseInt(now_time.split('_')[1].split(':')[2]);
+			toggleStartStop([m_now_time, s_now_time], token);
+			$(this).attr('value', 'STOP');
+		} else {
+			clearTimeout(timer);
+			$(this).attr('value', 'START');
+		}
+	}
 });
-document.getElementById('backH').onclick = function(){changePhoto(0, -1)};
+
+document.getElementById('backH').onclick = function(){
+	var now_time = $('#now_time').text();
+	var m_now_time = parseInt(now_time.split('_')[1].split(':')[1]);
+	var s_now_time = parseInt(now_time.split('_')[1].split(':')[2]);
+	console.log('now_time: ', now_time);
+	console.log('m_now_time: ', m_now_time);
+	console.log('s_now_time: ', s_now_time);
+	if(m_now_time == 0 && s_now_time == 0){
+		return changePhoto(0, -1);
+	} else {
+		return changePhoto(0, 0)
+	}
+};
 document.getElementById('backD').onclick = function(){changePhoto(-1, 0)};
 document.getElementById('backW').onclick = function(){changePhoto(-7, 0)};
 document.getElementById('nextH').onclick = function(){changePhoto(0, 1)};
